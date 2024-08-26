@@ -1,8 +1,4 @@
-import React, { useReducer } from "react";
-import styles from "./Billsplitter.module.css";
-import tipstyles from "../TipMenu/TipMenu.module.css";
-import resetStyles from "../Resetbutton/Resetbutton.module.css";
-import "../../App.css";
+import React, { useReducer,   } from "react"; 
 import InputNumber from "../InputNumber/InputNumber";
 import TipMenu from "../TipMenu/TipMenu";
 import SplitperPerson from "../SplitPerPerson/SplitPerPerson";
@@ -13,7 +9,7 @@ import { initialState, reducer } from "./billsplitterReduce";
  * Props for the BillsplitterProps component.
  */
 export interface BillsplitterProps {
-  title1: string;
+  title: string;
   inputLabel1: string;
   BillAmountInput1: number;
   inputLabel2: string;
@@ -29,8 +25,8 @@ export interface BillsplitterProps {
   splitLabel2: string;
   splitLabel3: string;
   splitLabel4: string;
-  idFotsplitter1: string;
-  idFotsplitter2: string;
+  idForSplitter1: string;
+  idForSplitter2: string;
   idForBill: string;
   idForNumberOfPeople: string;
   idForResetButton: string;
@@ -39,6 +35,8 @@ export interface BillsplitterProps {
 const Billsplitter: React.FC<BillsplitterProps> = (Props) => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
+  //  refs for input elements
+  // TODO make use of inital state rather than dom manipulating to set values 
 
   const handleBillAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -46,15 +44,15 @@ const Billsplitter: React.FC<BillsplitterProps> = (Props) => {
     if (!isNaN(numberValue)) {
       dispatch({
         type: "SET_BILL_AMOUNT",
-        payload: parseFloat(numberValue.toFixed(2)),
+        payload: numberValue.toString(),
       });
     } else {
-      dispatch({ type: "SET_BILL_AMOUNT", payload: 0.0 });
+      dispatch({ type: "SET_BILL_AMOUNT", payload: "0.0" });
     }
   };
 
   const getBillErrorMessage = () => {
-    if (state.billAmountInput < 0) {
+    if (+state.billAmountInput < 0) {
       return "Amount cannot be negative";
     }
     return "";
@@ -66,15 +64,17 @@ const Billsplitter: React.FC<BillsplitterProps> = (Props) => {
     const value = e.target.value;
     const numberValue = parseFloat(value);
     if (!isNaN(numberValue) && numberValue > 0) {
-      dispatch({ type: "SET_NUMBER_OF_PERSONS", payload: numberValue });
-      updateResetButtonState(false);
+      dispatch({
+        type: "SET_NUMBER_OF_PERSONS",
+        payload: numberValue.toString(),
+      });
     } else {
-      dispatch({ type: "SET_NUMBER_OF_PERSONS", payload: 1 });
+      dispatch({ type: "SET_NUMBER_OF_PERSONS", payload: "1" });
     }
   };
 
   const getPeopleErrorMessage = () => {
-    if (state.numberOfPersonsInput < 1) {
+    if (+state.numberOfPersonsInput < 1) {
       return "People cannot be less than 1";
     }
     return "";
@@ -82,40 +82,24 @@ const Billsplitter: React.FC<BillsplitterProps> = (Props) => {
 
   const handleTipButtonClick = (value: string) => {
     const tipPercentage = parseFloat(value) / 100;
-    dispatch({ type: "SET_SELECTED_TIP_VALUE", payload: tipPercentage });
-    updateResetButtonState(false);
+    dispatch({
+      type: "SET_SELECTED_TIP_VALUE",
+      payload: tipPercentage.toString(),
+    });
   };
 
-  const handleReset = () => {
-    const customButtonInput = document.getElementById(
-      "customButton"
-    ) as HTMLInputElement;
-    if (customButtonInput) {
-      customButtonInput.value = "";
-    }
-    const previouslySelected = document.querySelector(`.${tipstyles.selected}`);
-    if (previouslySelected) {
-      previouslySelected.classList.remove(tipstyles.selected);
-    }
+  const handleReset = () => { 
     dispatch({ type: "RESET" });
-    const billAmountInput = document.getElementById(Props.idForBill);
-    if (billAmountInput) {
-      billAmountInput.focus();
+    const element = document.querySelector(
+      '[tabindex="0"]'
+    ) as HTMLInputElement;
+    if (element) {
+      element.focus();
     }
-    updateResetButtonState(true);
   };
 
-  const updateResetButtonState = (disable: boolean) => {
-    const resetButton = document.getElementById(
-      Props.idForResetButton
-    ) as HTMLInputElement;
-    if (resetButton) {
-      if (disable) {
-        resetButton.classList.add(resetStyles.disabled);
-      } else {
-        resetButton.classList.remove(resetStyles.disabled);
-      }
-    }
+  const isInitialState = (currentState: typeof initialState) => {
+    return JSON.stringify(currentState) === JSON.stringify(initialState);
   };
 
   const calculateTipPerPerson = (
@@ -135,7 +119,6 @@ const Billsplitter: React.FC<BillsplitterProps> = (Props) => {
     tipPercentage: number
   ): number => {
     if (billAmountInput > 0) {
-      updateResetButtonState(false);
       return (
         billAmountInput / numberOfPersonsInput +
         calculateTipPerPerson(
@@ -149,12 +132,27 @@ const Billsplitter: React.FC<BillsplitterProps> = (Props) => {
   };
 
   return (
-    <div className={styles.mainContainer}>
-      <div className={styles.titleContainer}>
-        <label className={styles.title}>{Props.title1}</label>
+    // main container
+    <div className={" bg-base-green min-w-full"}>
+      {/* title-container */}
+      <div className={" py-10 flex justify-center  "}>
+        {/* title */}
+        <label
+          className={
+            "font-text text-dark-green text-2xl font-bold leading-9 tracking-[.75rem] max-w-[6.69rem] flex flex-col break-words "
+          }
+        >
+          {Props.title}
+        </label>
       </div>
-      <div className={styles.contentContainer}>
-        <div className={styles.leftContainer}>
+      {/* contentContainer */}
+      <div
+        className={
+          " flex flex-col gap-x-[4.77%]  rounded-[20px]   md:flex-row max-w-[80rem] p-[4.77%] bg-white text-base "
+        }
+      >
+        {/* leftContainer */}
+        <div className={" flex flex-col gap-3"}>
           <InputNumber
             inputId={Props.idForBill}
             label={Props.inputLabel1}
@@ -163,6 +161,7 @@ const Billsplitter: React.FC<BillsplitterProps> = (Props) => {
             numberInput={state.billAmountInput}
             onNumberInputChange={handleBillAmountChange}
             error={() => getBillErrorMessage()}
+            placeHolder={"0.00"}
           />
           <TipMenu
             label={Props.tipMenuLabel}
@@ -173,6 +172,7 @@ const Billsplitter: React.FC<BillsplitterProps> = (Props) => {
             buttonContent5={Props.buttonContent5}
             buttonContent6={Props.buttonContent6}
             onButtonClick={handleTipButtonClick}
+            defaultSelected={Props.buttonContent1}
           />
           <InputNumber
             inputId={Props.idForNumberOfPeople}
@@ -182,35 +182,45 @@ const Billsplitter: React.FC<BillsplitterProps> = (Props) => {
             numberInput={state.numberOfPersonsInput}
             onNumberInputChange={handleNumberOfPersonsInput}
             error={() => getPeopleErrorMessage()}
+            placeHolder={"1"}
           />
         </div>
-        <div className={styles.rightContainer}>
-          <div className={styles.tipAmount}>
+        {/* rightContainer */}
+        <div
+          className={
+            "bg-dark-green rounded-2xl min flex flex-col gap-y-16 p-14 md:text-[0.8rem]"
+          }
+        >
+          <div className={""}>
             <SplitperPerson
               idName={Props.inputLabel1}
               label1={Props.splitLabel1}
               label2={Props.splitLabel2}
               numberInput={calculateTipPerPerson(
-                state.billAmountInput,
-                state.numberOfPersonsInput,
+                +state.billAmountInput,
+                +state.numberOfPersonsInput,
                 +state.selectedTipValue
               )}
             />
           </div>
-          <div className={styles.totalAmount}>
+          <div className={""}>
             <SplitperPerson
               idName={Props.inputLabel2}
               label1={Props.splitLabel3}
               label2={Props.splitLabel4}
               numberInput={calculateTotalPerPerson(
-                state.billAmountInput,
-                state.numberOfPersonsInput,
+                +state.billAmountInput,
+                +state.numberOfPersonsInput,
                 +state.selectedTipValue
               )}
             />
           </div>
-          <div className={styles.reset}>
-            <Resetbutton name={Props.idForResetButton} onClick={handleReset} />
+          <div className={""}>
+            <Resetbutton
+              name={Props.idForResetButton}
+              onClick={handleReset}
+              disabled={isInitialState(state)}
+            />
           </div>
         </div>
       </div>

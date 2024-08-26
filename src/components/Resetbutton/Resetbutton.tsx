@@ -1,29 +1,37 @@
-import React from 'react';
-import styles from './Resetbutton.module.css';
+import React, { useRef } from "react";
+
 interface ResetbuttonProps {
-  /**
-   * Name of the button
-   */
   name: string;
-  /**
-   * Function to be called when the button is clicked
-   */
-  onClick: () => void; 
+  onClick: () => void;
+  disabled: boolean;
 }
 
+const Resetbutton: React.FC<ResetbuttonProps> = ({
+  name,
+  onClick,
+  disabled,
+}) => {
+  const resetButtonRef = useRef<HTMLButtonElement>(null);
 
-const Resetbutton: React.FC<ResetbuttonProps> = (Props) => {
   return (
-    <div className={styles.container}>
+    <div className="max-w-[28.375rem] w-full">
       <button
-        className={`${styles.reset} ${styles.disabled}`}
-        // disabled={true}
-        id={Props.name}
-        onClick={Props.onClick}
+        ref={resetButtonRef}
+        id={name}
+        onClick={onClick}
+        disabled={disabled}
+        className={`w-full px-0 py-[13px] text-[1.5rem] font-space-mono leading-[35.54px] tracking-[2px] text-center font-bold rounded-[7px] 
+          ${
+            disabled
+              ? "bg-[#0D686D] text-dark-green cursor-default"
+              : "bg-[#26C2AD] text-dark-green cursor-pointer hover:bg-base-green"
+          } 
+          sm:py-[9px] sm:max-w-full`}
       >
-        {Props.name}
+        {name}
       </button>
     </div>
   );
 };
+
 export default Resetbutton;

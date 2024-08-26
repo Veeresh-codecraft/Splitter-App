@@ -1,41 +1,18 @@
-import React from "react";
-import "../../App.css";
-import styles from "./TipMenu.module.css";
+import React, { useState, useRef } from "react";
+
 interface TipMenuProps {
-  /**
-   * Label for the number input field
-   */
   label: string;
-  /**
-   * buttonContent for the 1st button field
-   */
   buttonContent1: string;
-  /**
-   * buttonContent for the 2st button field
-   */
   buttonContent2: string;
-  /**
-   * buttonContent for the 3st button field
-   */
   buttonContent3: string;
-  /**
-   * buttonContent for the 4st button field
-   */
   buttonContent4: string;
-  /**
-   * buttonContent for the 5st button field
-   */
   buttonContent5: string;
-  /**
-   * buttonContent for the 6st button field
-   */
   buttonContent6: string;
-  /**
-   * Function to handle button clicks
-   */
   onButtonClick: (value: string) => void;
+  defaultSelected?: string; // Make defaultSelected optional
 }
-const TipMenu: React.FC<TipMenuProps> = (Props) => {
+
+const TipMenu: React.FC<TipMenuProps> = (props) => {
   const {
     label,
     buttonContent1,
@@ -45,58 +22,42 @@ const TipMenu: React.FC<TipMenuProps> = (Props) => {
     buttonContent5,
     buttonContent6,
     onButtonClick,
-  } = Props;
+    defaultSelected,
+  } = props;
 
-const handleClick = (value: string) => {
-  console.log(`Button clicked: ${value}`);
+  // Determine the initial selected value
+  const initialSelectedValue = defaultSelected || buttonContent1;
 
-  const customButtonInput = document.getElementById(
-    "customButton"
-  ) as HTMLInputElement;
-  if (customButtonInput) {
-    customButtonInput.value = "";
-  }
+  const [selectedValue, setSelectedValue] =useState<string>(initialSelectedValue);
+  const [customSelected, setCustomSelected] = useState<boolean>(false);
+  const customButtonRef = useRef<HTMLInputElement>(null);
 
-  // Remove previously selected class
-  const previouslySelected = document.querySelector(`.${styles.selected}`);
-  if (previouslySelected) {
-    console.log("Removing selected class from:", previouslySelected);
-    previouslySelected.classList.remove(styles.selected);
-  }
-
-  // Add selected class to the clicked button
-  const buttonToSelect = document.querySelector(`#button-${value}`);
-  if (buttonToSelect) {
-    console.log("Adding selected class to:", buttonToSelect);
-    buttonToSelect.classList.add(styles.selected);
-  } else {
-    console.error(`Button with ID #button-${value} not found.`);
-  }
-
-  onButtonClick(value);
-};
-
-
+  const handleClick = (value: string) => {
+    setSelectedValue(value);
+    setCustomSelected(false);
+    if (customButtonRef.current) {
+      customButtonRef.current.value = "";
+    }
+    onButtonClick(value);
+  };
+  
   const handleCustomButtonClick = (
     event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-      const previouslySelected = document.querySelector(`.${styles.selected}`);
-      if (previouslySelected) {
-        console.log("Removing selected class from:", previouslySelected);
-        previouslySelected.classList.remove(styles.selected);
-      }
+  ) => { 
+    setCustomSelected(true);
     const inputValue = event.target.value;
     if (parseFloat(inputValue) <= 0) {
       event.target.value = "";
       return;
     }
+    setSelectedValue(inputValue);
     onButtonClick(inputValue);
   };
 
   return (
-    <div className={styles.container}>
-      <label className={styles.label}>{label}</label>
-      <div className={styles.gridContainer}>
+    <div className="max-w-[32.8rem] font-text w-full font-bold text-[1.25rem] tracking-wide flex flex-col bg-white">
+      <label className="pb-6 text-gray-700">{label}</label>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-6">
         {[
           buttonContent1,
           buttonContent2,
@@ -105,9 +66,9 @@ const handleClick = (value: string) => {
           buttonContent5,
         ].map((tipPercentageValue, index) => (
           <button
-            id={`button-${tipPercentageValue}`}
             key={index}
-            className={styles.gridButton}
+            className={`max-w-[9.93rem] w-full  rounded-lg border-none text-center cursor-pointer py-2 text-2xl tracking-wide
+              ${selectedValue === tipPercentageValue ? "bg-base-green text-dark-green" : "text-white bg-dark-green "}`}
             value={tipPercentageValue}
             onClick={() => handleClick(tipPercentageValue)}
           >
@@ -115,11 +76,13 @@ const handleClick = (value: string) => {
           </button>
         ))}
         <input
-          id="customButton"
+          ref={customButtonRef}
           name="customButton"
-          type="number"
-          className={styles.customButton}
-          onInput={handleCustomButtonClick}
+          type="text"
+          className={`bg-gray-100 text-gray-700 font-bold rounded-lg border-none text-center  w-full cursor-pointer text-2xl tracking-normal outline-none   
+          max-w-[9.93rem]
+           ${customSelected ? "outline outline-2 outline-base-green" : ""}`}
+          onClick={handleCustomButtonClick}
           placeholder={buttonContent6}
         />
       </div>
@@ -128,4 +91,3 @@ const handleClick = (value: string) => {
 };
 
 export default TipMenu;
- 
